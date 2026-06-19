@@ -11,6 +11,8 @@ import {
   CommentHiddenToggle,
   RatingDeleteButton,
 } from "@/components/admin/comment-moderation";
+import { JsonLd } from "@/components/json-ld";
+import { siteUrl } from "@/lib/site";
 
 export async function generateMetadata({
   params,
@@ -20,7 +22,26 @@ export async function generateMetadata({
   const { slug } = await params;
   const project = await getPublishedProjectBySlug(slug);
   if (!project) return { title: "Projekt nicht gefunden" };
-  return { title: project.title, description: project.teaser };
+  const image = coverFile(project.cover_template);
+  const url = `/projekte/${project.slug}`;
+  return {
+    title: project.title,
+    description: project.teaser,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      title: project.title,
+      description: project.teaser,
+      url,
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: project.title,
+      description: project.teaser,
+      images: [image],
+    },
+  };
 }
 
 function Stars({ stars }: { stars: number }) {
@@ -98,8 +119,30 @@ export default async function ProjectDetailPage({
     }
   }
 
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: project.title,
+    headline: project.title,
+    description: project.teaser,
+    url: `${siteUrl}/projekte/${project.slug}`,
+    image: `${siteUrl}${coverFile(project.cover_template)}`,
+    author: { "@type": "Person", name: project.authorName },
+    inLanguage: "de",
+  };
+  if (project.ratingCount > 0 && project.avgStars !== null) {
+    jsonLd.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: project.avgStars,
+      ratingCount: project.ratingCount,
+      bestRating: 5,
+      worstRating: 1,
+    };
+  }
+
   return (
     <article className="mx-auto max-w-4xl px-6 py-12">
+      <JsonLd data={jsonLd} />
       {/* Cover-Hero mit Titel im soliden Markenband (Dunkelblau/Weiß, AAA) */}
       <div className="relative overflow-hidden rounded-lg">
         {/* eslint-disable-next-line @next/next/no-img-element */}

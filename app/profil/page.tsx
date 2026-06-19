@@ -6,7 +6,10 @@ import { signOutAction } from "@/app/auth/actions";
 import { ProfileForm } from "./profile-form";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 
-export const metadata: Metadata = { title: "Profil" };
+export const metadata: Metadata = {
+  title: "Profil",
+  robots: { index: false, follow: false },
+};
 
 const STATUS_LABEL: Record<ProjectStatus, string> = {
   draft: "Entwurf",

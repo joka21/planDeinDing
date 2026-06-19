@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublishedProjects } from "@/lib/projects";
 import { ProjectCard } from "@/components/projects/project-card";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const latest = (await getPublishedProjects({})).slice(0, 3);

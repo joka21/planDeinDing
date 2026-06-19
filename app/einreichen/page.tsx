@@ -3,7 +3,10 @@ import { requireProfile } from "@/lib/auth";
 import { ProjectForm } from "@/components/projects/project-form";
 import { createProjectAction } from "./actions";
 
-export const metadata: Metadata = { title: "Projekt einreichen" };
+export const metadata: Metadata = {
+  title: "Projekt einreichen",
+  robots: { index: false, follow: false },
+};
 
 export default async function EinreichenPage() {
   await requireProfile();

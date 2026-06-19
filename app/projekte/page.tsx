@@ -6,6 +6,7 @@ import { ProjectCard } from "@/components/projects/project-card";
 export const metadata: Metadata = {
   title: "Projekte",
   description: "Entdecke und bewerte veröffentlichte Projekte.",
+  alternates: { canonical: "/projekte" },
 };
 
 export default async function ProjektePage({

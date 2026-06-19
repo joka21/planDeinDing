@@ -6,7 +6,10 @@ import { ProjectForm } from "@/components/projects/project-form";
 import { updateProjectAction } from "@/app/einreichen/actions";
 import type { CoverValue } from "@/lib/covers";
 
-export const metadata: Metadata = { title: "Projekt bearbeiten" };
+export const metadata: Metadata = {
+  title: "Projekt bearbeiten",
+  robots: { index: false, follow: false },
+};
 
 export default async function EditProjectPage({
   params,
