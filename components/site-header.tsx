@@ -1,17 +1,19 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { getProfile } from "@/lib/auth";
 import { signOutAction } from "@/app/auth/actions";
+import { SearchBar } from "@/components/search-bar";
 
 export async function SiteHeader() {
   const profile = await getProfile();
 
   return (
     <header className="sticky top-0 z-40 bg-surface-dark text-bg">
-      <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 py-4">
         {/* Links: Logo + Wortmarke */}
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-3"
+          className="order-1 flex shrink-0 items-center gap-3"
           aria-label="Plan dein Ding — zur Startseite"
         >
           {/*
@@ -32,11 +34,18 @@ export async function SiteHeader() {
           <span className="font-display text-h4 font-bold">Plan dein Ding</span>
         </Link>
 
-        {/* Mitte: Slot für die Such-/Filterleiste (Logik folgt in Phase 4) */}
-        <div className="flex-1" data-slot="search-filter" aria-hidden="true" />
+        {/* Mitte (Desktop) / eigene Zeile (Mobil): Such-/Filterleiste */}
+        <div className="order-3 w-full md:order-2 md:ml-2 md:w-auto md:max-w-md md:flex-1">
+          <Suspense fallback={null}>
+            <SearchBar />
+          </Suspense>
+        </div>
 
         {/* Rechts: Konto */}
-        <nav aria-label="Konto" className="flex shrink-0 items-center gap-2">
+        <nav
+          aria-label="Konto"
+          className="order-2 ml-auto flex shrink-0 items-center gap-2 md:order-3"
+        >
           {profile ? (
             <>
               {profile.role === "admin" && (
