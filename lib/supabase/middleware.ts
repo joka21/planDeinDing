@@ -1,12 +1,21 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+/** Routen, die eine angemeldete Session voraussetzen. */
+const PROTECTED_PREFIXES = ["/einreichen", "/profil", "/admin"];
+
+function isProtected(pathname: string) {
+  return PROTECTED_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
+
 /**
  * Refreshes the Supabase auth session on every matched request and forwards
- * any rotated auth cookies to both the request and the response.
+ * any rotated auth cookies. Schützt außerdem die geschützten Routen: ohne
+ * Session -> Redirect auf /login mit ?redirect=<Zielpfad>.
  *
- * Defensive: when env vars are missing it passes the request through untouched
- * so the app keeps working during local setup.
+ * Defensiv: ohne Env-Vars wird die Anfrage unverändert durchgereicht.
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -36,8 +45,17 @@ export async function updateSession(request: NextRequest) {
   });
 
   // IMPORTANT: do not run code between createServerClient and getUser().
-  // Refreshing the auth token keeps the session alive for Server Components.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user && isProtected(request.nextUrl.pathname)) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.search = "";
+    loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
 
   return supabaseResponse;
 }

@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { getProfile } from "@/lib/auth";
+import { signOutAction } from "@/app/auth/actions";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const profile = await getProfile();
+
   return (
     <header className="sticky top-0 z-40 bg-surface-dark text-bg">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
@@ -29,26 +33,51 @@ export function SiteHeader() {
         </Link>
 
         {/* Mitte: Slot für die Such-/Filterleiste (Logik folgt in Phase 4) */}
-        <div
-          className="flex-1"
-          data-slot="search-filter"
-          aria-hidden="true"
-        />
+        <div className="flex-1" data-slot="search-filter" aria-hidden="true" />
 
-        {/* Rechts: Login / Profil (Auth folgt in Phase 3) */}
+        {/* Rechts: Konto */}
         <nav aria-label="Konto" className="flex shrink-0 items-center gap-2">
-          <Link
-            href="/login"
-            className="rounded-lg px-3 py-2 font-medium hover:underline"
-          >
-            Anmelden
-          </Link>
-          <Link
-            href="/registrieren"
-            className="rounded-lg bg-bg px-3 py-2 font-semibold text-primary hover:bg-surface"
-          >
-            Registrieren
-          </Link>
+          {profile ? (
+            <>
+              {profile.role === "admin" && (
+                <Link
+                  href="/admin"
+                  className="rounded-lg px-3 py-2 font-medium hover:underline"
+                >
+                  Admin
+                </Link>
+              )}
+              <Link
+                href="/profil"
+                className="rounded-lg px-3 py-2 font-medium hover:underline"
+              >
+                Profil
+              </Link>
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-bg px-3 py-2 font-semibold text-primary hover:bg-surface"
+                >
+                  Abmelden
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="rounded-lg px-3 py-2 font-medium hover:underline"
+              >
+                Anmelden
+              </Link>
+              <Link
+                href="/registrieren"
+                className="rounded-lg bg-bg px-3 py-2 font-semibold text-primary hover:bg-surface"
+              >
+                Registrieren
+              </Link>
+            </>
+          )}
         </nav>
       </div>
     </header>
