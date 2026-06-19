@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { coverFile } from "@/lib/covers";
 import { getPublishedProjectBySlug } from "@/lib/projects";
+import { getProfile } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { RatingSummary } from "@/components/projects/rating-summary";
+import { RatingForm } from "@/components/projects/rating-form";
 
 export async function generateMetadata({
   params,
@@ -35,6 +39,24 @@ export default async function ProjectDetailPage({
   const { slug } = await params;
   const project = await getPublishedProjectBySlug(slug);
   if (!project) notFound();
+
+  const profile = await getProfile();
+  const isAuthor = profile?.id === project.authorId;
+  const canRate = !!profile && !isAuthor && profile.can_rate;
+
+  let ownRating: { stars: number; comment: string | null } | null = null;
+  if (profile) {
+    const supabase = await createClient();
+    if (supabase) {
+      const { data } = await supabase
+        .from("ratings")
+        .select("stars, comment")
+        .eq("project_id", project.id)
+        .eq("user_id", profile.id)
+        .maybeSingle();
+      ownRating = data ?? null;
+    }
+  }
 
   return (
     <article className="mx-auto max-w-4xl px-6 py-12">
@@ -85,6 +107,36 @@ export default async function ProjectDetailPage({
           className="mt-2"
         />
 
+        {canRate ? (
+          <RatingForm
+            projectId={project.id}
+            slug={project.slug}
+            initial={ownRating}
+          />
+        ) : (
+          <p className="mt-6 rounded-lg border border-divider bg-surface px-4 py-3 text-body text-text">
+            {!profile ? (
+              <>
+                Zum Bewerten bitte{" "}
+                <Link
+                  href={`/login?redirect=/projekte/${project.slug}`}
+                  className="font-medium underline"
+                >
+                  anmelden
+                </Link>
+                .
+              </>
+            ) : isAuthor ? (
+              "Dein eigenes Projekt kannst du nicht bewerten."
+            ) : (
+              "Zum Bewerten musst du von einem Admin freigeschaltet sein."
+            )}
+          </p>
+        )}
+
+        <h3 className="mt-10 font-display text-h4 font-bold text-text">
+          Alle Bewertungen
+        </h3>
         {project.ratings.length === 0 ? (
           <p className="mt-4 text-body text-text/80">
             Dieses Projekt wurde noch nicht bewertet.

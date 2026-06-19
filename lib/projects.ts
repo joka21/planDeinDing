@@ -28,6 +28,7 @@ export type ProjectDetail = {
   teaser: string;
   description: string;
   cover_template: string;
+  authorId: string;
   authorName: string;
   avgStars: number | null;
   ratingCount: number;
@@ -156,6 +157,7 @@ export async function getPublishedProjectBySlug(
     teaser: project.teaser,
     description: project.description,
     cover_template: project.cover_template,
+    authorId: project.author_id,
     authorName: author?.display_name ?? "Unbekannt",
     avgStars: toAvg(stat?.avg_stars),
     ratingCount: stat?.rating_count ?? 0,
