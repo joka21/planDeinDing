@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Farb-Tokens (für Nicht-Tailwind-Kontexte, z. B. currentColor-SVGs) */
+  --color-bg: #FFFFFF;
+  --color-surface: #C3EDF2;
+  --color-surface-dark: #1B5879;
+  --color-text: #1B5879;
+  --color-text-accent: #4C5E42;
+  --color-primary: #1B5879;
+  --color-accent: #4C5E42;
+  --color-decor: #6B855D;
+  --color-border: #1B5879;
+  --color-divider: #CAC8CC;
+}
+
+html {
+  color-scheme: light; /* nur Light-Mode im MVP */
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  font-size: 1.125rem; /* 18px Fließtext */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-bricolage), system-ui, sans-serif;
+}
+
+/* Sichtbarer Fokus (Dunkelblau), nur bei Tastaturnutzung */
+:focus-visible {
+  outline: 3px solid var(--color-border);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip-to-content-Link */
+.skip-link {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translateY(-120%);
+  background: var(--color-surface-dark);
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  z-index: 50;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Reduzierte Bewegung respektieren */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
