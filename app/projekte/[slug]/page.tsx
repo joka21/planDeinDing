@@ -7,6 +7,10 @@ import { getProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { RatingSummary } from "@/components/projects/rating-summary";
 import { RatingForm } from "@/components/projects/rating-form";
+import {
+  CommentHiddenToggle,
+  RatingDeleteButton,
+} from "@/components/admin/comment-moderation";
 
 export async function generateMetadata({
   params,
@@ -44,7 +48,17 @@ export default async function ProjectDetailPage({
   const isAuthor = profile?.id === project.authorId;
   const canRate = !!profile && !isAuthor && profile.can_rate;
 
+  const isAdmin = profile?.role === "admin";
   let ownRating: { stars: number; comment: string | null } | null = null;
+  type AdminRating = {
+    id: string;
+    display_name: string;
+    stars: number;
+    comment: string | null;
+    comment_hidden: boolean;
+  };
+  let adminRatings: AdminRating[] | null = null;
+
   if (profile) {
     const supabase = await createClient();
     if (supabase) {
@@ -55,6 +69,32 @@ export default async function ProjectDetailPage({
         .eq("user_id", profile.id)
         .maybeSingle();
       ownRating = data ?? null;
+
+      if (isAdmin) {
+        // Admin sieht die echten Kommentare (auch ausgeblendete) zur Moderation.
+        const { data: raw } = await supabase
+          .from("ratings")
+          .select("id, user_id, stars, comment, comment_hidden")
+          .eq("project_id", project.id)
+          .order("created_at", { ascending: false });
+        const ids = [...new Set((raw ?? []).map((r) => r.user_id))];
+        const { data: profs } = ids.length
+          ? await supabase
+              .from("public_profiles")
+              .select("id, display_name")
+              .in("id", ids)
+          : { data: [] as { id: string; display_name: string }[] };
+        const nameById = new Map(
+          (profs ?? []).map((p) => [p.id, p.display_name]),
+        );
+        adminRatings = (raw ?? []).map((r) => ({
+          id: r.id,
+          display_name: nameById.get(r.user_id) ?? "Unbekannt",
+          stars: r.stars,
+          comment: r.comment,
+          comment_hidden: r.comment_hidden,
+        }));
+      }
     }
   }
 
@@ -137,7 +177,45 @@ export default async function ProjectDetailPage({
         <h3 className="mt-10 font-display text-h4 font-bold text-text">
           Alle Bewertungen
         </h3>
-        {project.ratings.length === 0 ? (
+        {isAdmin && adminRatings ? (
+          adminRatings.length === 0 ? (
+            <p className="mt-4 text-body text-text/80">
+              Dieses Projekt wurde noch nicht bewertet.
+            </p>
+          ) : (
+            <ul className="mt-6 flex flex-col gap-5">
+              {adminRatings.map((r) => (
+                <li
+                  key={r.id}
+                  className="rounded-lg border border-divider bg-surface p-4"
+                >
+                  <p className="flex flex-wrap items-center gap-x-2 text-text">
+                    <span className="font-medium">{r.display_name}</span>
+                    <Stars stars={r.stars} />
+                    {r.comment_hidden && (
+                      <span className="text-small text-text/70">
+                        (ausgeblendet)
+                      </span>
+                    )}
+                  </p>
+                  {r.comment && (
+                    <p className="mt-2 max-w-[70ch] text-body text-text/90">
+                      {r.comment}
+                    </p>
+                  )}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <CommentHiddenToggle
+                      ratingId={r.id}
+                      hidden={r.comment_hidden}
+                      slug={project.slug}
+                    />
+                    <RatingDeleteButton ratingId={r.id} slug={project.slug} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )
+        ) : project.ratings.length === 0 ? (
           <p className="mt-4 text-body text-text/80">
             Dieses Projekt wurde noch nicht bewertet.
           </p>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { requireProfile } from "@/lib/auth";
 import { ProjectForm } from "@/components/projects/project-form";
+import { createProjectAction } from "./actions";
 
 export const metadata: Metadata = { title: "Projekt einreichen" };
 
@@ -16,7 +17,10 @@ export default async function EinreichenPage() {
         Nach dem Einreichen prüft ein Admin dein Projekt, bevor es
         veröffentlicht wird.
       </p>
-      <ProjectForm mode="create" />
+      <ProjectForm
+        action={createProjectAction}
+        submitLabel="Projekt einreichen"
+      />
     </section>
   );
 }

@@ -8,18 +8,16 @@ import { TextareaField } from "@/components/form/textarea-field";
 import { FormError } from "@/components/form/form-error";
 import { COVERS } from "@/lib/covers";
 import { projectSchema, type ProjectInput } from "@/lib/validation/project";
-import {
-  createProjectAction,
-  updateProjectAction,
-} from "@/app/einreichen/actions";
 
 export function ProjectForm({
-  mode,
-  projectId,
+  action,
+  submitLabel,
+  submittingLabel = "Wird gesendet…",
   initial,
 }: {
-  mode: "create" | "edit";
-  projectId?: string;
+  action: (values: ProjectInput) => Promise<{ error: string } | undefined>;
+  submitLabel: string;
+  submittingLabel?: string;
   initial?: ProjectInput;
 }) {
   const {
@@ -40,10 +38,7 @@ export function ProjectForm({
 
   async function onSubmit(values: ProjectInput) {
     setServerError(null);
-    const result =
-      mode === "edit" && projectId
-        ? await updateProjectAction(projectId, values)
-        : await createProjectAction(values);
+    const result = await action(values);
     if (result?.error) setServerError(result.error);
   }
 
@@ -122,11 +117,7 @@ export function ProjectForm({
         disabled={isSubmitting}
         className="rounded-lg bg-primary px-4 py-2.5 font-semibold text-bg hover:bg-text disabled:opacity-60"
       >
-        {isSubmitting
-          ? "Wird gesendet…"
-          : mode === "edit"
-            ? "Änderungen speichern"
-            : "Projekt einreichen"}
+        {isSubmitting ? submittingLabel : submitLabel}
       </button>
     </form>
   );

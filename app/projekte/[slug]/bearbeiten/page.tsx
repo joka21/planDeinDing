@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ProjectForm } from "@/components/projects/project-form";
+import { updateProjectAction } from "@/app/einreichen/actions";
 import type { CoverValue } from "@/lib/covers";
 
 export const metadata: Metadata = { title: "Projekt bearbeiten" };
@@ -38,8 +39,9 @@ export default async function EditProjectPage({
         veröffentlicht.
       </p>
       <ProjectForm
-        mode="edit"
-        projectId={project.id}
+        action={updateProjectAction.bind(null, project.id)}
+        submitLabel="Änderungen speichern"
+        submittingLabel="Wird gespeichert…"
         initial={{
           title: project.title,
           teaser: project.teaser,

@@ -355,6 +355,12 @@ grant select on public.public_profiles      to anon, authenticated;
 grant select on public.project_rating_stats to anon, authenticated;
 grant select on public.public_ratings       to anon, authenticated;
 
+-- service_role (vertrauenswürdiger Server-Kontext, umgeht RLS): explizite DML-Rechte.
+-- Wird z. B. für die Admin-Freigabe profiles.can_rate genutzt.
+grant select, insert, update, delete on public.profiles to service_role;
+grant select, insert, update, delete on public.projects to service_role;
+grant select, insert, update, delete on public.ratings  to service_role;
+
 -- Helfer-Funktionen ausführbar (werden in Policies genutzt).
 grant execute on function public.is_admin()               to anon, authenticated;
 grant execute on function public.can_current_user_rate()  to anon, authenticated;
