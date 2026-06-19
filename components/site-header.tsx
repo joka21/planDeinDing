@@ -2,11 +2,12 @@ import Link from "next/link";
 
 export function SiteHeader() {
   return (
-    <header className="bg-surface-dark text-bg">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+    <header className="sticky top-0 z-40 bg-surface-dark text-bg">
+      <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
+        {/* Links: Logo + Wortmarke */}
         <Link
           href="/"
-          className="flex items-center gap-3"
+          className="flex shrink-0 items-center gap-3"
           aria-label="Plan dein Ding — zur Startseite"
         >
           {/*
@@ -26,6 +27,29 @@ export function SiteHeader() {
           </span>
           <span className="font-display text-h4 font-bold">Plan dein Ding</span>
         </Link>
+
+        {/* Mitte: Slot für die Such-/Filterleiste (Logik folgt in Phase 4) */}
+        <div
+          className="flex-1"
+          data-slot="search-filter"
+          aria-hidden="true"
+        />
+
+        {/* Rechts: Login / Profil (Auth folgt in Phase 3) */}
+        <nav aria-label="Konto" className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/login"
+            className="rounded-lg px-3 py-2 font-medium hover:underline"
+          >
+            Anmelden
+          </Link>
+          <Link
+            href="/registrieren"
+            className="rounded-lg bg-bg px-3 py-2 font-semibold text-primary hover:bg-surface"
+          >
+            Registrieren
+          </Link>
+        </nav>
       </div>
     </header>
   );
