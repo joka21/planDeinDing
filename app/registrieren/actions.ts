@@ -15,7 +15,13 @@ export async function registerAction(values: unknown): Promise<RegisterResult> {
 
   const supabase = await createClient();
   if (!supabase) {
-    return { error: "Der Dienst ist gerade nicht verfügbar. Bitte später erneut versuchen." };
+    console.error(
+      "[registerAction] Supabase-Env fehlt (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY). .env.local prüfen und Dev-Server neu starten.",
+    );
+    return {
+      error:
+        "Konfiguration unvollständig: Der Supabase-Zugang ist nicht gesetzt. Bitte .env.local prüfen und den Server neu starten.",
+    };
   }
 
   const origin = (await headers()).get("origin") ?? "http://localhost:3000";
@@ -30,7 +36,9 @@ export async function registerAction(values: unknown): Promise<RegisterResult> {
   });
 
   if (error) {
-    return { error: "Registrierung fehlgeschlagen. Eventuell existiert bereits ein Konto mit dieser E-Mail." };
+    // Echten Fehler serverseitig loggen und dem Nutzer sichtbar machen.
+    console.error("[registerAction] signUp error:", error.message);
+    return { error: `Registrierung fehlgeschlagen: ${error.message}` };
   }
 
   redirect("/auth/bestaetigung");

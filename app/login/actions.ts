@@ -29,7 +29,13 @@ export async function loginAction(
 
   const supabase = await createClient();
   if (!supabase) {
-    return { error: "Der Dienst ist gerade nicht verfügbar. Bitte später erneut versuchen." };
+    console.error(
+      "[loginAction] Supabase-Env fehlt (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY). .env.local prüfen und Dev-Server neu starten.",
+    );
+    return {
+      error:
+        "Konfiguration unvollständig: Der Supabase-Zugang ist nicht gesetzt. Bitte .env.local prüfen und den Server neu starten.",
+    };
   }
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -38,7 +44,8 @@ export async function loginAction(
   });
 
   if (error) {
-    // Bewusst generisch (keine Auskunft, ob die E-Mail existiert).
+    // Echten Fehler loggen, dem Nutzer aber generisch antworten (keine User-Enumeration).
+    console.error("[loginAction] signIn error:", error.message);
     return { error: "E-Mail oder Passwort ist nicht korrekt – oder die E-Mail wurde noch nicht bestätigt." };
   }
 
